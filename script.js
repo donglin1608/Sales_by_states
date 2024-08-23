@@ -14,12 +14,17 @@ function initMap() {
         download: true,
         header: true,
         complete: function(results) {
+            console.log("Parsed CSV Data:", results.data); // Debugging log
+
             results.data.forEach(function(item) {
                 var state = item.State;
                 var sales = item.Sales;
 
+                // Debugging log for each state and sales
+                console.log("Processing state:", state, "Sales:", sales);
+
                 // Check if sales data is defined and not empty
-                if (sales) {
+                if (sales && sales.trim() !== "") {
                     // Remove $ sign and commas, then parse as a float
                     sales = parseFloat(sales.replace(/[$,]/g, ''));
 
