@@ -25,6 +25,43 @@
             border: 1px solid #ccc;
             padding: 10px;
             display: none; /* Hidden initially */
+            z-index: 1000; /* Make sure it is on top of the map */
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="chart_div"></div>
+
+    <!-- Load the Google Maps JavaScript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales by States</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+
+        #chart_div {
+            position: absolute;
+            width: 300px;
+            height: 200px;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: none; /* Hidden initially */
+            z-index: 1000; /* Make sure it is on top of the map */
         }
     </style>
 </head>
@@ -34,6 +71,18 @@
 
     <!-- Load the Google Maps JavaScript API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFkCZbfL_zFHU7iPP3_29-nhjt9JQqijA&callback=initMap" async defer></script>
+
+    <!-- Include PapaParse library to parse CSV file -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <!-- Load Google Charts library -->
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <!-- Link to the external JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>
+&callback=initMap" async defer></script>
 
     <!-- Include PapaParse library to parse CSV file -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
