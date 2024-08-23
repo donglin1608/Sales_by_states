@@ -18,35 +18,40 @@ function initMap() {
                 var state = item.State;
                 var sales = item.Sales;
 
-                // Remove $ sign and commas, then parse as a float
-                sales = parseFloat(sales.replace(/[$,]/g, ''));
+                // Check if sales data is defined and not empty
+                if (sales) {
+                    // Remove $ sign and commas, then parse as a float
+                    sales = parseFloat(sales.replace(/[$,]/g, ''));
 
-                if (!isNaN(sales)) {
-                    // Get the latitude and longitude for each state using the Geocoding API
-                    fetch(geocodeUrl + encodeURIComponent(state) + '&key=AIzaSyCFkCZbfL_zFHU7iPP3_29-nhjt9JQqijA')
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'OK') {
-                                var latLng = data.results[0].geometry.location;
+                    if (!isNaN(sales)) {
+                        // Get the latitude and longitude for each state using the Geocoding API
+                        fetch(geocodeUrl + encodeURIComponent(state) + '&key=AIzaSyCFkCZbfL_zFHU7iPP3_29-nhjt9JQqijA')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'OK') {
+                                    var latLng = data.results[0].geometry.location;
 
-                                // Create a marker for each state
-                                var marker = new google.maps.Marker({
-                                    position: latLng,
-                                    map: map,
-                                    title: `${state}: $${sales}`
-                                });
+                                    // Create a marker for each state
+                                    var marker = new google.maps.Marker({
+                                        position: latLng,
+                                        map: map,
+                                        title: `${state}: $${sales}`
+                                    });
 
-                                // When the marker is clicked, show a histogram of sales data
-                                marker.addListener('click', function() {
-                                    showHistogram(state, sales, latLng);
-                                });
-                            } else {
-                                console.error(`Geocoding API error for ${state}: ${data.status}`);
-                            }
-                        })
-                        .catch(error => console.error('Error fetching geocoding data:', error));
+                                    // When the marker is clicked, show a histogram of sales data
+                                    marker.addListener('click', function() {
+                                        showHistogram(state, sales, marker.getPosition());
+                                    });
+                                } else {
+                                    console.error(`Geocoding API error for ${state}: ${data.status}`);
+                                }
+                            })
+                            .catch(error => console.error('Error fetching geocoding data:', error));
+                    } else {
+                        console.error(`Invalid sales data for ${state}: ${item.Sales}`);
+                    }
                 } else {
-                    console.error(`Invalid sales data for ${state}: ${item.Sales}`);
+                    console.error(`Sales data is undefined or empty for ${state}`);
                 }
             });
         },
@@ -57,7 +62,7 @@ function initMap() {
 }
 
 // Function to display a histogram of sales data
-function showHistogram(state, sales, latLng) {
+function showHistogram(state, sales, position) {
     // Load the Google Charts library
     google.charts.load('current', {packages: ['corechart']});
     google.charts.setOnLoadCallback(drawChart);
@@ -80,8 +85,6 @@ function showHistogram(state, sales, latLng) {
                 format: 'decimal'
             },
             bars: 'vertical',  // Required for Material Bar Charts
-            width: '100%',
-            height: '100%',
             annotations: {
                 alwaysOutside: true,
                 textStyle: {
@@ -95,10 +98,15 @@ function showHistogram(state, sales, latLng) {
         var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
         chart.draw(data, options);
 
-        // Position the chart div on the map where the marker is clicked
+        // Position the chart div relative to the map
         var chartDiv = document.getElementById('chart_div');
-        chartDiv.style.left = `${latLng.lng() * 3}px`;  // Adjust these multipliers based on your map size
-        chartDiv.style.top = `${latLng.lat() * -3}px`;  // Adjust these multipliers based on your map size
+        var projection = map.getProjection();
+        var point = projection.fromLatLngToPoint(position);
+        var x = point.x * Math.pow(2, map.getZoom());
+        var y = point.y * Math.pow(2, map.getZoom());
+
+        chartDiv.style.left = `${x - chartDiv.offsetWidth / 2}px`;
+        chartDiv.style.top = `${y - chartDiv.offsetHeight - 10}px`;
         chartDiv.style.display = 'block';
     }
 }
