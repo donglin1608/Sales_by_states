@@ -16,31 +16,41 @@ function initMap() {
         complete: function(results) {
             results.data.forEach(function(item) {
                 var state = item.State;
-                var sales = parseFloat(item.Sales);
+                var sales = item.Sales;
 
-                // Get the latitude and longitude for each state using the Geocoding API
-                fetch(geocodeUrl + encodeURIComponent(state) + '&key=AIzaSyCFkCZbfL_zFHU7iPP3_29-nhjt9JQqijA')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'OK') {
-                            var latLng = data.results[0].geometry.location;
+                // Remove $ sign and commas, then parse as a float
+                sales = parseFloat(sales.replace(/[$,]/g, ''));
 
-                            // Create a marker for each state
-                            var marker = new google.maps.Marker({
-                                position: latLng,
-                                map: map,
-                                title: `${state}: $${sales}`
-                            });
+                // Log the state and sales to check if the data is correct
+                console.log("State: ", state, "Sales: ", sales);
 
-                            // When the marker is clicked, show a histogram of sales data
-                            marker.addListener('click', function() {
-                                showHistogram(state, sales);
-                            });
-                        } else {
-                            console.error(`Geocoding API error for ${state}: ${data.status}`);
-                        }
-                    })
-                    .catch(error => console.error('Error fetching geocoding data:', error));
+                if (!isNaN(sales)) {
+                    // Get the latitude and longitude for each state using the Geocoding API
+                    fetch(geocodeUrl + encodeURIComponent(state) + '&key=AIzaSyCFkCZbfL_zFHU7iPP3_29-nhjt9JQqijA')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'OK') {
+                                var latLng = data.results[0].geometry.location;
+
+                                // Create a marker for each state
+                                var marker = new google.maps.Marker({
+                                    position: latLng,
+                                    map: map,
+                                    title: `${state}: $${sales}`
+                                });
+
+                                // When the marker is clicked, show a histogram of sales data
+                                marker.addListener('click', function() {
+                                    showHistogram(state, sales);
+                                });
+                            } else {
+                                console.error(`Geocoding API error for ${state}: ${data.status}`);
+                            }
+                        })
+                        .catch(error => console.error('Error fetching geocoding data:', error));
+                } else {
+                    console.error(`Invalid sales data for ${state}: ${item.Sales}`);
+                }
             });
         },
         error: function(error) {
@@ -56,12 +66,6 @@ function showHistogram(state, sales) {
     google.charts.setOnLoadCallback(drawChart);
 
     function drawChart() {
-        // Check if sales data is valid
-        if (isNaN(sales)) {
-            console.error(`Invalid sales data for ${state}: ${sales}`);
-            return;
-        }
-
         var data = google.visualization.arrayToDataTable([
             ['State', 'Sales'],
             [state, sales]
