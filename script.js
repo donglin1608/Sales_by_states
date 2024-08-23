@@ -21,9 +21,6 @@ function initMap() {
                 // Remove $ sign and commas, then parse as a float
                 sales = parseFloat(sales.replace(/[$,]/g, ''));
 
-                // Log the state and sales to check if the data is correct
-                console.log("State: ", state, "Sales: ", sales);
-
                 if (!isNaN(sales)) {
                     // Get the latitude and longitude for each state using the Geocoding API
                     fetch(geocodeUrl + encodeURIComponent(state) + '&key=AIzaSyCFkCZbfL_zFHU7iPP3_29-nhjt9JQqijA')
@@ -41,7 +38,7 @@ function initMap() {
 
                                 // When the marker is clicked, show a histogram of sales data
                                 marker.addListener('click', function() {
-                                    showHistogram(state, sales);
+                                    showHistogram(state, sales, latLng);
                                 });
                             } else {
                                 console.error(`Geocoding API error for ${state}: ${data.status}`);
@@ -60,7 +57,7 @@ function initMap() {
 }
 
 // Function to display a histogram of sales data
-function showHistogram(state, sales) {
+function showHistogram(state, sales, latLng) {
     // Load the Google Charts library
     google.charts.load('current', {packages: ['corechart']});
     google.charts.setOnLoadCallback(drawChart);
@@ -79,14 +76,29 @@ function showHistogram(state, sales) {
                 minValue: 0
             },
             vAxis: {
-                title: 'Sales'
+                title: 'Sales',
+                format: 'decimal'
             },
             bars: 'vertical',  // Required for Material Bar Charts
             width: '100%',
             height: '100%',
+            annotations: {
+                alwaysOutside: true,
+                textStyle: {
+                    fontSize: 12,
+                    color: '#000',
+                    auraColor: 'none'
+                }
+            }
         };
 
         var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
         chart.draw(data, options);
+
+        // Position the chart div on the map where the marker is clicked
+        var chartDiv = document.getElementById('chart_div');
+        chartDiv.style.left = `${latLng.lng() * 3}px`;  // Adjust these multipliers based on your map size
+        chartDiv.style.top = `${latLng.lat() * -3}px`;  // Adjust these multipliers based on your map size
+        chartDiv.style.display = 'block';
     }
 }
