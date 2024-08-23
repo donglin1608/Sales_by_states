@@ -56,6 +56,12 @@ function showHistogram(state, sales) {
     google.charts.setOnLoadCallback(drawChart);
 
     function drawChart() {
+        // Check if sales data is valid
+        if (isNaN(sales)) {
+            console.error(`Invalid sales data for ${state}: ${sales}`);
+            return;
+        }
+
         var data = google.visualization.arrayToDataTable([
             ['State', 'Sales'],
             [state, sales]
@@ -71,7 +77,9 @@ function showHistogram(state, sales) {
             vAxis: {
                 title: 'Sales'
             },
-            bars: 'vertical'  // Required for Material Bar Charts
+            bars: 'vertical',  // Required for Material Bar Charts
+            width: '100%',
+            height: '100%',
         };
 
         var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
